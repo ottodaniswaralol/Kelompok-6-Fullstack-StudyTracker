@@ -5,15 +5,15 @@ Dibuat sebagai proyek mata kuliah **IT Project Management**.
 
 ---
 
-## 👥 Tim Kelompok
+## 👥 Tim Kelompok 6
 
-| Nama | Email |
-|------|-------|
-| Satrio | Satrio@student.bakrie.ac.id |
-| Otto | Otto@student.bakrie.ac.id |
-| Adrian | Adrian@student.bakrie.ac.id |
-| Yurfa | Yurfa@student.bakrie.ac.id |
-| Rio | Rio@student.bakrie.ac.id |
+| Nama | Role |
+|------|------|
+| Satrio Keanu Wicaksono | Project Manager |
+| Yurfa Apridelia | System Analyst |
+| Muhammad Adrian Maulana | UI/UX |
+| Otto Daniswara | Developer |
+| Muhammad Rio Darmawan | Quality Analyst |
 
 ---
 
