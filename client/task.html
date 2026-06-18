@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daftar Tugas - StudyTracker</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body class="bg-gray-100 font-sans antialiased text-gray-800 flex h-screen overflow-hidden">
+    <aside class="w-64 bg-white border-r border-gray-200 hidden md:flex flex-col">
+        <div class="h-16 flex items-center px-4 border-b border-gray-200">
+            <img src="assets/images/logo.png" alt="StudyTracker" class="h-12 object-contain">
+        </div>
+        <nav class="flex-1 overflow-y-auto py-4 px-3 space-y-1">
+            <a href="index.html" class="flex items-center px-3 py-2.5 text-gray-700 hover:bg-gray-50 rounded-lg transition-colors">
+                <i class="fas fa-home w-5 mr-3"></i> Dashboard
+            </a>
+            <a href="task.html" class="flex items-center px-3 py-2.5 bg-indigo-50 text-indigo-700 rounded-lg font-medium">
+                <i class="fas fa-tasks w-5 mr-3"></i> Daftar Tugas
+            </a>
+            <a href="calendar.html" class="flex items-center px-3 py-2.5 text-gray-700 hover:bg-gray-50 rounded-lg transition-colors">
+                <i class="fas fa-calendar-alt w-5 mr-3"></i> Kalender
+            </a>
+            <a href="focus.html" class="flex items-center px-3 py-2.5 text-gray-700 hover:bg-gray-50 rounded-lg transition-colors">
+                <i class="fas fa-stopwatch w-5 mr-3"></i> Focus Mode
+            </a>
+            <a href="stats.html" class="flex items-center px-3 py-2.5 text-gray-700 hover:bg-gray-50 rounded-lg transition-colors">
+                <i class="fas fa-chart-pie w-5 mr-3"></i> Statistik
+            </a>
+        </nav>
+        <div class="p-4 border-t border-gray-200">
+            <button onclick="doLogout()" class="flex items-center w-full px-3 py-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors">
+                <i class="fas fa-sign-out-alt w-5 mr-3"></i> Keluar
+            </button>
+        </div>
+    </aside>
+
+    <main class="flex-1 flex flex-col h-screen overflow-hidden">
+        <header class="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-6">
+            <h2 class="text-xl font-semibold text-gray-800">StudyTracker</h2>
+            <div class="flex items-center space-x-4">
+                <div class="relative">
+                    <button onclick="toggleNotif()" class="text-gray-500 hover:text-indigo-600 relative">
+                        <i class="fas fa-bell text-xl"></i>
+                        <span id="notif-badge" class="hidden absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">!</span>
+                    </button>
+                    <div id="notif-panel" class="hidden absolute right-0 top-8 w-72 bg-white rounded-xl shadow-lg border border-gray-100 z-50">
+                        <div class="p-3 border-b border-gray-100 font-semibold text-sm text-gray-700">🔔 Deadline dalam 24 Jam</div>
+                        <div id="notif-list"><p class="text-sm text-gray-500 p-3">Memuat...</p></div>
+                    </div>
+                </div>
+                <div class="w-8 h-8 bg-indigo-600 text-white rounded-full flex items-center justify-center font-bold text-sm user-initial">U</div>
+            </div>
+        </header>
+
+        <div class="flex-1 overflow-y-auto p-6 fade-in">
+            <div class="flex justify-between items-center mb-6">
+                <div>
+                    <h2 class="text-2xl font-bold text-gray-800">Daftar Tugas</h2>
+                    <p class="text-gray-500 text-sm">Kelola dan pantau semua tugas akademis kamu.</p>
+                </div>
+                <a href="add-task.html" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg font-medium transition-colors shadow-sm">
+                    <i class="fas fa-plus mr-2"></i> Tambah Tugas
+                </a>
+            </div>
+
+            <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 mb-6 flex gap-2">
+                <button onclick="setFilter('all')" id="filter-all" class="px-4 py-2 bg-indigo-50 text-indigo-700 rounded-lg text-sm font-semibold">Semua</button>
+                <button onclick="setFilter('pending')" id="filter-pending" class="px-4 py-2 text-gray-600 hover:bg-gray-50 rounded-lg text-sm font-medium transition-colors">Belum Selesai</button>
+                <button onclick="setFilter('completed')" id="filter-completed" class="px-4 py-2 text-gray-600 hover:bg-gray-50 rounded-lg text-sm font-medium transition-colors">Selesai</button>
+            </div>
+
+            <div id="task-container" class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                <div class="p-8 text-center text-gray-400">Memuat tugas...</div>
+            </div>
+        </div>
+    </main>
+
+    <script src="assets/js/api.js"></script>
+    <script>
+        let currentFilter = 'all';
+        let allTasks = [];
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            initUserHeader();
+            await loadTasks();
+        });
+
+        async function loadTasks() {
+            try {
+                allTasks = await api.getTasks();
+                renderTasks();
+            } catch (e) {
+                document.getElementById('task-container').innerHTML = '<div class="p-8 text-center text-red-400">Gagal memuat tugas.</div>';
+            }
+        }
+
+        function setFilter(f) {
+            currentFilter = f;
+            ['all','pending','completed'].forEach(k => {
+                const btn = document.getElementById(`filter-${k}`);
+                btn.className = k === f
+                    ? 'px-4 py-2 bg-indigo-50 text-indigo-700 rounded-lg text-sm font-semibold'
+                    : 'px-4 py-2 text-gray-600 hover:bg-gray-50 rounded-lg text-sm font-medium transition-colors';
+            });
+            renderTasks();
+        }
+
+        function renderTasks() {
+            const filtered = currentFilter === 'all' ? allTasks : allTasks.filter(t => t.status === currentFilter);
+            const el = document.getElementById('task-container');
+
+            if (filtered.length === 0) {
+                el.innerHTML = '<div class="p-8 text-center text-gray-400 text-sm">Tidak ada tugas di kategori ini. <a href="add-task.html" class="text-indigo-500 hover:underline">Tambah tugas baru</a></div>';
+                return;
+            }
+
+            el.innerHTML = filtered.map(t => {
+                const done = t.status === 'completed';
+                return `
+                <div class="p-4 border-b border-gray-50 flex items-center justify-between hover:bg-gray-50 transition-colors ${done ? 'opacity-70' : ''}">
+                    <div class="flex items-center">
+                        <input type="checkbox" ${done ? 'checked' : ''} onchange="toggleTask(${t.id}, this)"
+                            class="w-5 h-5 text-indigo-600 rounded border-gray-300 focus:ring-indigo-500 mr-4 cursor-pointer">
+                        <div>
+                            <h4 class="text-base font-semibold ${done ? 'text-gray-400 line-through' : 'text-gray-800'}">${t.judul}</h4>
+                            <p class="text-sm text-gray-500"><i class="fas fa-book mr-1"></i> ${t.mata_kuliah}</p>
+                        </div>
+                    </div>
+                    <div class="text-right flex items-center gap-4">
+                        <span class="px-3 py-1 ${getPriorityClass(t.prioritas)} text-xs font-bold rounded-full">${getPriorityLabel(t.prioritas)}</span>
+                        <div class="text-right hidden sm:block">
+                            <p class="text-sm font-medium ${done ? 'text-gray-400' : 'text-gray-800'}">${done ? 'Selesai' : formatDeadline(t.deadline)}</p>
+                        </div>
+                        <button onclick="deleteTask(${t.id})" class="text-gray-400 hover:text-red-500 ml-2 transition-colors"><i class="fas fa-trash text-sm"></i></button>
+                    </div>
+                </div>`;
+            }).join('');
+        }
+
+        async function toggleTask(id, cb) {
+            const newStatus = cb.checked ? 'completed' : 'pending';
+            try {
+                await api.updateTaskStatus(id, newStatus);
+                const task = allTasks.find(t => t.id == id);
+                if (task) task.status = newStatus;
+                renderTasks();
+                showToast(cb.checked ? 'Tugas ditandai selesai!' : 'Tugas diaktifkan kembali.');
+            } catch (e) {
+                showToast('Gagal mengupdate tugas.', 'error');
+                cb.checked = !cb.checked;
+            }
+        }
+
+        async function deleteTask(id) {
+            if (!confirm('Hapus tugas ini?')) return;
+            try {
+                await api.deleteTask(id);
+                allTasks = allTasks.filter(t => t.id != id);
+                renderTasks();
+                showToast('Tugas dihapus.');
+            } catch (e) {
+                showToast('Gagal menghapus tugas.', 'error');
+            }
+        }
+
+        function toggleNotif() {
+            document.getElementById('notif-panel').classList.toggle('hidden');
+        }
+
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('#notif-panel') && !e.target.closest('.fa-bell')) {
+                document.getElementById('notif-panel')?.classList.add('hidden');
+            }
+        });
+
+        function doLogout() {
+            localStorage.removeItem('st_token');
+            localStorage.removeItem('st_user');
+            window.location.href = 'login.html';
+        }
+    </script>
+</body>
+</html>

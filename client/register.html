@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daftar - StudyTracker</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body class="bg-gray-50 text-gray-800 font-sans antialiased">
+    <div class="min-h-screen flex items-center justify-center p-4">
+        <div class="max-w-md w-full bg-white rounded-xl shadow-lg p-8">
+            <div class="text-center mb-8">
+                <img src="assets/images/logo.png" alt="StudyTracker Logo" class="h-32 mx-auto mb-4 object-contain drop-shadow-sm">
+                <p class="text-gray-500">Buat akun untuk mulai melacak tugasmu.</p>
+            </div>
+
+            <div class="space-y-5">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Nama Lengkap</label>
+                    <input type="text" id="reg-name" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all" placeholder="Nama lengkap kamu">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                    <input type="email" id="reg-email" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all" placeholder="email@mahasiswa.ac.id">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Password</label>
+                    <input type="password" id="reg-password" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all" placeholder="Minimal 8 karakter">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Konfirmasi Password</label>
+                    <input type="password" id="reg-confirm" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all" placeholder="Ulangi password">
+                </div>
+                <p id="reg-error" class="text-red-500 text-sm hidden"></p>
+                <button onclick="doRegister()" id="reg-btn" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2.5 rounded-lg transition-colors mt-2">
+                    Daftar Akun
+                </button>
+            </div>
+
+            <p class="mt-6 text-center text-sm text-gray-600">
+                Sudah punya akun? <a href="login.html" class="text-indigo-600 font-semibold hover:underline">Masuk di sini</a>
+            </p>
+        </div>
+    </div>
+
+    <script>
+        if (localStorage.getItem('st_token')) window.location.href = 'index.html';
+
+        const BASE_URL = 'https://studytracker-server-production.up.railway.app';
+
+        async function doRegister() {
+            const nama = document.getElementById('reg-name').value.trim();
+            const email = document.getElementById('reg-email').value.trim();
+            const pw = document.getElementById('reg-password').value;
+            const confirm = document.getElementById('reg-confirm').value;
+            const errEl = document.getElementById('reg-error');
+            const btn = document.getElementById('reg-btn');
+
+            errEl.classList.add('hidden');
+
+            if (!nama || !email || !pw || !confirm) {
+                errEl.textContent = 'Semua field wajib diisi.';
+                errEl.classList.remove('hidden');
+                return;
+            }
+            if (pw.length < 8) {
+                errEl.textContent = 'Password minimal 8 karakter.';
+                errEl.classList.remove('hidden');
+                return;
+            }
+            if (pw !== confirm) {
+                errEl.textContent = 'Password dan konfirmasi tidak sama.';
+                errEl.classList.remove('hidden');
+                return;
+            }
+
+            btn.disabled = true;
+            btn.textContent = 'Mendaftar...';
+
+            try {
+                const res = await fetch(`${BASE_URL}/api/auth/register`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ nama_lengkap: nama, email, password: pw })
+                });
+                const data = await res.json();
+
+                if (!res.ok) {
+                    errEl.textContent = data.message || 'Pendaftaran gagal.';
+                    errEl.classList.remove('hidden');
+                } else {
+                    alert('Akun berhasil dibuat! Silakan login.');
+                    window.location.href = 'login.html';
+                }
+            } catch (e) {
+                errEl.textContent = 'Tidak bisa terhubung ke server. Coba lagi.';
+                errEl.classList.remove('hidden');
+            }
+
+            btn.disabled = false;
+            btn.textContent = 'Daftar Akun';
+        }
+    </script>
+</body>
+</html>

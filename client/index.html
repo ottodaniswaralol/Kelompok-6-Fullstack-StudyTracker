@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - StudyTracker</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body class="bg-gray-100 font-sans antialiased text-gray-800 flex h-screen overflow-hidden">
+
+    <aside class="w-64 bg-white border-r border-gray-200 hidden md:flex flex-col">
+        <div class="h-16 flex items-center px-4 border-b border-gray-200">
+            <img src="assets/images/logo.png" alt="StudyTracker" class="h-12 object-contain">
+        </div>
+        <nav class="flex-1 overflow-y-auto py-4 px-3 space-y-1">
+            <a href="index.html" class="flex items-center px-3 py-2.5 bg-indigo-50 text-indigo-700 rounded-lg font-medium">
+                <i class="fas fa-home w-5 mr-3"></i> Dashboard
+            </a>
+            <a href="task.html" class="flex items-center px-3 py-2.5 text-gray-700 hover:bg-gray-50 rounded-lg transition-colors">
+                <i class="fas fa-tasks w-5 mr-3"></i> Daftar Tugas
+            </a>
+            <a href="calendar.html" class="flex items-center px-3 py-2.5 text-gray-700 hover:bg-gray-50 rounded-lg transition-colors">
+                <i class="fas fa-calendar-alt w-5 mr-3"></i> Kalender
+            </a>
+            <a href="focus.html" class="flex items-center px-3 py-2.5 text-gray-700 hover:bg-gray-50 rounded-lg transition-colors">
+                <i class="fas fa-stopwatch w-5 mr-3"></i> Focus Mode
+            </a>
+            <a href="stats.html" class="flex items-center px-3 py-2.5 text-gray-700 hover:bg-gray-50 rounded-lg transition-colors">
+                <i class="fas fa-chart-pie w-5 mr-3"></i> Statistik
+            </a>
+        </nav>
+        <div class="p-4 border-t border-gray-200">
+            <button onclick="doLogout()" class="flex items-center w-full px-3 py-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors">
+                <i class="fas fa-sign-out-alt w-5 mr-3"></i> Keluar
+            </button>
+        </div>
+    </aside>
+
+    <main class="flex-1 flex flex-col h-screen overflow-hidden">
+        <header class="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-6">
+            <h2 class="text-xl font-semibold text-gray-800">Selamat datang, <span class="user-name text-indigo-600">...</span>! 👋</h2>
+            <div class="flex items-center space-x-4 relative">
+                <div class="relative">
+                    <button onclick="toggleNotif()" class="text-gray-500 hover:text-indigo-600 relative">
+                        <i class="fas fa-bell text-xl"></i>
+                        <span id="notif-badge" class="hidden absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-xs rounded-full flex items-center justify-center" id="notif-count">0</span>
+                    </button>
+                    <div id="notif-panel" class="hidden absolute right-0 top-8 w-72 bg-white rounded-xl shadow-lg border border-gray-100 z-50">
+                        <div class="p-3 border-b border-gray-100 font-semibold text-sm text-gray-700">🔔 Deadline dalam 24 Jam</div>
+                        <div id="notif-list"><p class="text-sm text-gray-500 p-3">Memuat...</p></div>
+                    </div>
+                </div>
+                <div class="w-8 h-8 bg-indigo-600 text-white rounded-full flex items-center justify-center font-bold text-sm user-initial">U</div>
+            </div>
+        </header>
+
+        <div class="flex-1 overflow-y-auto p-6">
+            <!-- Stats Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-100 flex items-center">
+                    <div class="w-12 h-12 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-xl mr-4">
+                        <i class="fas fa-book-open"></i>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-500 font-medium">Tugas Aktif</p>
+                        <p class="text-2xl font-bold text-gray-800"><span id="stat-aktif">-</span> Tugas</p>
+                    </div>
+                </div>
+                <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-100 flex items-center">
+                    <div class="w-12 h-12 rounded-full bg-red-100 text-red-600 flex items-center justify-center text-xl mr-4">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-500 font-medium">Deadline Terdekat</p>
+                        <p class="text-lg font-bold text-gray-800" id="stat-deadline">-</p>
+                    </div>
+                </div>
+                <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-100 flex items-center">
+                    <div class="w-12 h-12 rounded-full bg-green-100 text-green-600 flex items-center justify-center text-xl mr-4">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-500 font-medium">Progress Belajar</p>
+                        <p class="text-2xl font-bold text-gray-800"><span id="stat-progress">-</span>%</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div class="lg:col-span-2 space-y-6">
+                    <!-- AI Rekomendasi -->
+                    <div class="bg-gradient-to-r from-indigo-500 to-purple-600 rounded-xl shadow-sm p-6 text-white">
+                        <div class="flex items-start">
+                            <i class="fas fa-robot text-3xl mr-4 mt-1"></i>
+                            <div class="flex-1">
+                                <h3 class="font-bold text-lg mb-1">Rekomendasi AI Hari Ini</h3>
+                                <p class="text-indigo-100 text-sm mb-3" id="ai-text">Memuat rekomendasi...</p>
+                                <a href="focus.html" class="bg-white text-indigo-600 px-4 py-2 rounded-lg text-sm font-semibold hover:bg-indigo-50 transition-colors inline-block">Mulai Focus Mode</a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tugas Mendatang -->
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-100">
+                        <div class="p-5 border-b border-gray-100 flex justify-between items-center">
+                            <h3 class="font-bold text-gray-800">Tugas & Deadline Mendatang</h3>
+                            <a href="add-task.html" class="text-sm text-indigo-600 font-medium hover:underline"><i class="fas fa-plus mr-1"></i> Tambah</a>
+                        </div>
+                        <div id="task-list-dashboard">
+                            <div class="p-6 text-center text-gray-400 text-sm">Memuat tugas...</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Rencana Harian -->
+                <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5 h-fit">
+                    <h3 class="font-bold text-gray-800 mb-4">Rencana Harian</h3>
+                    <div id="daily-plan-list" class="space-y-3 mb-4"></div>
+                    <div class="flex gap-2">
+                        <input type="text" id="new-activity" placeholder="Tambah aktivitas..." class="flex-1 text-sm px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none">
+                        <button onclick="addActivity()" class="px-3 py-2 bg-indigo-600 text-white rounded-lg text-sm hover:bg-indigo-700">
+                            <i class="fas fa-plus"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="assets/js/api.js"></script>
+    <script>
+        let dashboardTasks = [];
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            initUserHeader();
+            await loadDashboard();
+            await loadDailyPlans();
+            await loadAiRekomendasi();
+        });
+
+        async function loadDashboard() {
+            try {
+                const data = await api.getDashboard();
+                document.getElementById('stat-aktif').textContent = data.total_pending;
+                document.getElementById('stat-progress').textContent = data.progress;
+
+                if (data.nearest_deadline) {
+                    document.getElementById('stat-deadline').textContent = formatDeadline(data.nearest_deadline.deadline);
+                } else {
+                    document.getElementById('stat-deadline').textContent = 'Tidak ada';
+                }
+
+                dashboardTasks = data.upcoming_tasks;
+                renderDashboardTasks(data.upcoming_tasks);
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
+        function renderDashboardTasks(tasks) {
+            const el = document.getElementById('task-list-dashboard');
+            if (!tasks || tasks.length === 0) {
+                el.innerHTML = '<div class="p-6 text-center text-gray-400 text-sm">Tidak ada tugas aktif. <a href="add-task.html" class="text-indigo-500 hover:underline">Tambah tugas</a></div>';
+                return;
+            }
+            el.innerHTML = tasks.map(t => `
+                <div class="flex items-center justify-between p-4 border-b border-gray-50 hover:bg-gray-50 task-item" data-id="${t.id}">
+                    <div class="flex items-center">
+                        <input type="checkbox" onchange="toggleTask(${t.id}, this)" class="w-5 h-5 text-indigo-600 rounded border-gray-300 focus:ring-indigo-500 mr-4 cursor-pointer">
+                        <div>
+                            <h4 class="text-sm font-semibold text-gray-800 task-title">${t.judul}</h4>
+                            <p class="text-xs text-gray-500">${t.mata_kuliah}</p>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <span class="inline-block px-2 py-1 ${getPriorityClass(t.prioritas)} text-xs font-semibold rounded-md mb-1">${getPriorityLabel(t.prioritas)}</span>
+                        <p class="text-xs text-gray-500">${formatDeadline(t.deadline)}</p>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        async function toggleTask(id, checkbox) {
+            const row = checkbox.closest('.task-item');
+            const titleEl = row.querySelector('.task-title');
+            const newStatus = checkbox.checked ? 'completed' : 'pending';
+            try {
+                await api.updateTaskStatus(id, newStatus);
+                if (checkbox.checked) {
+                    titleEl.classList.add('line-through', 'text-gray-400');
+                    row.classList.add('opacity-60');
+                } else {
+                    titleEl.classList.remove('line-through', 'text-gray-400');
+                    row.classList.remove('opacity-60');
+                }
+                await loadDashboard();
+                showToast(checkbox.checked ? 'Tugas ditandai selesai!' : 'Tugas diaktifkan kembali.');
+            } catch (e) {
+                showToast('Gagal mengupdate tugas.', 'error');
+                checkbox.checked = !checkbox.checked;
+            }
+        }
+
+        async function loadDailyPlans() {
+            try {
+                const plans = await api.getDailyPlans();
+                renderDailyPlans(plans);
+            } catch (e) { console.error(e); }
+        }
+
+        function renderDailyPlans(plans) {
+            const el = document.getElementById('daily-plan-list');
+            if (plans.length === 0) {
+                el.innerHTML = '<p class="text-sm text-gray-400">Belum ada aktivitas hari ini.</p>';
+                return;
+            }
+            el.innerHTML = plans.map(p => `
+                <label class="flex items-center space-x-3 cursor-pointer group">
+                    <input type="checkbox" ${p.is_done ? 'checked' : ''} onchange="togglePlan(${p.id}, this)"
+                        class="form-checkbox h-5 w-5 text-indigo-600 rounded">
+                    <span class="text-sm ${p.is_done ? 'text-gray-400 line-through' : 'text-gray-700'} flex-1 plan-text">${p.aktivitas}</span>
+                    <button onclick="deletePlan(${p.id})" class="text-gray-300 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity text-xs">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </label>
+            `).join('');
+        }
+
+        async function addActivity() {
+            const input = document.getElementById('new-activity');
+            const text = input.value.trim();
+            if (!text) return;
+            try {
+                await api.createPlan(text);
+                input.value = '';
+                await loadDailyPlans();
+            } catch (e) { showToast('Gagal menambah aktivitas.', 'error'); }
+        }
+
+        async function togglePlan(id, cb) {
+            try {
+                await api.updatePlan(id, cb.checked);
+                const span = cb.closest('label').querySelector('.plan-text');
+                cb.checked ? span.classList.add('line-through', 'text-gray-400') : span.classList.remove('line-through', 'text-gray-400');
+            } catch (e) { showToast('Gagal update aktivitas.', 'error'); cb.checked = !cb.checked; }
+        }
+
+        async function deletePlan(id) {
+            try {
+                await api.deletePlan(id);
+                await loadDailyPlans();
+            } catch (e) { showToast('Gagal hapus aktivitas.', 'error'); }
+        }
+
+        async function loadAiRekomendasi() {
+            try {
+                const data = await api.getAiRekomendasi();
+                document.getElementById('ai-text').textContent = data.rekomendasi;
+            } catch (e) {
+                document.getElementById('ai-text').textContent = 'Kerjakan tugas dengan deadline paling dekat terlebih dahulu. Semangat!';
+            }
+        }
+
+        function toggleNotif() {
+            document.getElementById('notif-panel').classList.toggle('hidden');
+        }
+
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('#notif-panel') && !e.target.closest('.fa-bell')) {
+                document.getElementById('notif-panel').classList.add('hidden');
+            }
+        });
+
+        document.getElementById('new-activity').addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') addActivity();
+        });
+
+        function doLogout() {
+            localStorage.removeItem('st_token');
+            localStorage.removeItem('st_user');
+            window.location.href = 'login.html';
+        }
+    </script>
+</body>
+</html>
